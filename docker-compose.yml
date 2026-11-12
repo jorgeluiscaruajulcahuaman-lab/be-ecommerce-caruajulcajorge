@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-ecommerce-compose
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./script.sql:/docker-entrypoint-initdb.d/script.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot123"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build: .
+    image: be-ecommerce-caruajulcajorge
+    container_name: be-ecommerce-caruajulcajorge
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      DB_URL: jdbc:mysql://db:3306/db_ecommerce_caruajulcajorge?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Lima
+      DB_USERNAME: root
+      DB_PASSWORD: root123
+    ports:
+      - "8081:8080"
